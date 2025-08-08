@@ -27,6 +27,6 @@
         <toolWindow id="Todo Calendar"
                     anchor="right"
                     icon="/META-INF/pluginIcon.svg"
-                    factoryClass="com.benson.todocalendar.HelloToolWindowFactory"/>
+                    factoryClass="com.benson.todocalendar.ToDoWindowFactory"/>
     </extensions>
 </idea-plugin>
