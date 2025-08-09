@@ -28,5 +28,8 @@
                     anchor="right"
                     icon="/META-INF/pluginIcon.svg"
                     factoryClass="com.benson.todocalendar.ToDoWindowFactory"/>
+        <postStartupActivity implementation="com.benson.todocalendar.TodoNotificationStartup"/>
+        <notificationGroup id="TodoCalendar" displayType="BALLOON" key="notification.group.todocalendar"/>
+        <projectCloseHandler implementation="com.benson.todocalendar.TodoProjectCloseHandler"/>
     </extensions>
 </idea-plugin>

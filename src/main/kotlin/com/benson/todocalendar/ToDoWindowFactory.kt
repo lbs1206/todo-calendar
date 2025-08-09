@@ -4,6 +4,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
 import com.intellij.ui.content.ContentFactory
+import com.intellij.ui.JBColor
 import javax.swing.*
 import javax.swing.table.DefaultTableModel
 import javax.swing.table.DefaultTableCellRenderer
@@ -30,7 +31,7 @@ private class MainTabbedPanel(private val project: Project) : JPanel(BorderLayou
     private val closedPanel = ClosedPanel(todoService) { refreshAll() }
 
     init {
-        tabs.addTab("Today ToDo List", todayPanel)
+        tabs.addTab("Today", todayPanel)
         tabs.addTab("Calendar", calendarPanel)
         tabs.addTab("Todo", todoPanel)
         tabs.addTab("Closed", closedPanel)
@@ -82,11 +83,14 @@ private class TodayPanel(private val todoService: TodoService, private val onCha
                 val isDone = statusText == Status.DONE.displayName
                 if (c is JLabel) {
                     if (isDone) {
-                        c.foreground = if (isSelected) Color(200, 200, 200) else Color(150, 150, 150)
+                        c.foreground = if (isSelected) 
+                            JBColor(Color(180, 180, 180), Color(120, 120, 120))
+                        else 
+                            JBColor(Color(150, 150, 150), Color(100, 100, 100))
                         val original = c.text
                         c.text = "<html><s>" + original + "</s></html>"
                     } else {
-                        c.foreground = if (isSelected) table.foreground else Color(0, 0, 0)
+                        c.foreground = if (isSelected) table!!.selectionForeground else JBColor.foreground()
                     }
                 }
                 return c
@@ -152,22 +156,75 @@ private class ManageTodoPanel(private val todoService: TodoService, private val 
         tableModel.addColumn("종료일")
         tableModel.addColumn("상태")
 
-        // 상태 컬럼만 편집 가능
-        editableColumns = setOf(6)
+        // 모든 컬럼을 편집 가능하게 설정
+        editableColumns = setOf(0, 1, 2, 3, 4, 5, 6)
+
+        // 각 컬럼에 적절한 에디터 설정
+        // 중요도 컬럼 (1)
+        val importanceCombo = JComboBox(Importance.values().map { it.displayName }.toTypedArray())
+        table.columnModel.getColumn(1).cellEditor = DefaultCellEditor(importanceCombo)
+
+        // 우선순위 컬럼 (2)
+        val prioritySpinner = JSpinner(SpinnerNumberModel(5, 1, 10, 1))
+        table.columnModel.getColumn(2).cellEditor = DefaultCellEditor(JTextField())
+
+        // 상태 컬럼 (6)
         val statusCombo = JComboBox(Status.values().map { it.displayName }.toTypedArray())
         table.columnModel.getColumn(6).cellEditor = DefaultCellEditor(statusCombo)
 
-        // 상태 변경 반영
+        // 모든 컬럼 변경 감지하여 자동 저장
         tableModel.addTableModelListener { e ->
-            if (e.type == javax.swing.event.TableModelEvent.UPDATE && e.column == 6) {
+            if (e.type == javax.swing.event.TableModelEvent.UPDATE && e.firstRow >= 0 && e.firstRow < current.size) {
                 val modelRow = e.firstRow
-                if (modelRow >= 0 && modelRow < current.size) {
-                    val id = current[modelRow].id
-                    val statusName = tableModel.getValueAt(modelRow, 6) as String
-                    val status = Status.fromDisplayName(statusName)
-                    todoService.setStatus(id, status)
+                val column = e.column
+                val todoItem = current[modelRow]
+
+                try {
+                    val updatedTodo = when (column) {
+                        0 -> todoItem.copy(taskName = tableModel.getValueAt(modelRow, 0) as String)
+                        1 -> {
+                            val importanceName = tableModel.getValueAt(modelRow, 1) as String
+                            val importance = Importance.values().find { it.displayName == importanceName } ?: Importance.MEDIUM
+                            todoItem.copy(importance = importance)
+                        }
+                        2 -> {
+                            val priorityText = tableModel.getValueAt(modelRow, 2) as String
+                            val priority = priorityText.toIntOrNull()?.coerceIn(1, 10) ?: todoItem.priority
+                            todoItem.copy(priority = priority)
+                        }
+                        3 -> todoItem.copy(description = tableModel.getValueAt(modelRow, 3) as String)
+                        4 -> {
+                            val dateText = tableModel.getValueAt(modelRow, 4) as String
+                            val startDate = try { LocalDate.parse(dateText) } catch (e: Exception) { todoItem.startDate }
+                            todoItem.copy(startDate = startDate)
+                        }
+                        5 -> {
+                            val dateText = tableModel.getValueAt(modelRow, 5) as String
+                            val endDate = try { LocalDate.parse(dateText) } catch (e: Exception) { todoItem.endDate }
+                            todoItem.copy(endDate = endDate)
+                        }
+                        6 -> {
+                            val statusName = tableModel.getValueAt(modelRow, 6) as String
+                            val status = Status.fromDisplayName(statusName)
+                            todoItem.copy(status = status, isCompleted = status == Status.DONE)
+                        }
+                        else -> todoItem
+                    }
+
+                    // 시작일이 종료일보다 늦은 경우 체크
+                    if (updatedTodo.startDate.isAfter(updatedTodo.endDate)) {
+                        JOptionPane.showMessageDialog(this@ManageTodoPanel, "시작일이 종료일보다 늦을 수 없습니다.")
+                        reload() // 원래 값으로 되돌림
+                        return@addTableModelListener
+                    }
+
+                    todoService.updateTodo(updatedTodo)
                     reload()
                     onChanged()
+
+                } catch (e: Exception) {
+                    JOptionPane.showMessageDialog(this@ManageTodoPanel, "잘못된 입력값입니다: ${e.message}")
+                    reload() // 원래 값으로 되돌림
                 }
             }
         }
@@ -403,9 +460,9 @@ private class CalendarPanel(private val todoService: TodoService) : JPanel(Borde
                     c.text = if (todos.isEmpty()) dayText else "$dayText (" + todos.size + ")"
                     c.font = c.font.deriveFont(if (todos.isEmpty()) Font.PLAIN else Font.BOLD)
                     if (cellDate.month == currentMonth.month) {
-                        c.foreground = if (isSelected) table!!.selectionForeground else Color.BLACK
+                        c.foreground = if (isSelected) table!!.selectionForeground else JBColor.foreground()
                     } else {
-                        c.foreground = Color.GRAY
+                        c.foreground = JBColor.GRAY
                     }
                 } else {
                     c.text = ""
@@ -414,14 +471,16 @@ private class CalendarPanel(private val todoService: TodoService) : JPanel(Borde
             }
         })
 
-        calendarTable.selectionModel.addListSelectionListener {
-            val selRow = calendarTable.selectedRow
-            val selCol = calendarTable.selectedColumn
-            if (selRow >= 0 && selCol >= 0) {
-                val date = calendarTable.getValueAt(selRow, selCol) as? LocalDate
-                if (date != null) updateDetails(date) else clearDetails()
+        calendarTable.addMouseListener(object : java.awt.event.MouseAdapter() {
+            override fun mouseClicked(e: java.awt.event.MouseEvent) {
+                val row = calendarTable.rowAtPoint(e.point)
+                val col = calendarTable.columnAtPoint(e.point)
+                if (row >= 0 && col >= 0) {
+                    val date = calendarTable.getValueAt(row, col) as? LocalDate
+                    if (date != null) updateDetails(date) else clearDetails()
+                }
             }
-        }
+        })
 
         add(JScrollPane(calendarTable), BorderLayout.CENTER)
         val detailsScroll = JScrollPane(detailsList)

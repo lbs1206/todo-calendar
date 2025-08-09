@@ -89,6 +89,23 @@ class TodoService : PersistentStateComponent<TodoService.State> {
         }
     }
 
+    fun updateTodo(updatedTodo: TodoItem) {
+        state.todos.find { it.id == updatedTodo.id }?.let { data ->
+            data.taskName = updatedTodo.taskName
+            data.importance = updatedTodo.importance.name
+            data.priority = updatedTodo.priority
+            data.description = updatedTodo.description
+            data.startDate = updatedTodo.startDate.toString()
+            data.endDate = updatedTodo.endDate.toString()
+            data.status = updatedTodo.status.name
+            data.isCompleted = updatedTodo.isCompleted
+        }
+    }
+
+    fun getTodoById(id: String): TodoItem? {
+        return getTodos().find { it.id == id }
+    }
+
     fun getOpenTodos(): List<TodoItem> = getTodos().filter { it.status != Status.DONE }
 
     fun getClosedTodos(): List<TodoItem> = getTodos().filter { it.status == Status.DONE }
