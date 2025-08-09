@@ -5,16 +5,57 @@
 
     <!-- Public plugin name should be written in Title Case.
          Guidelines: https://plugins.jetbrains.com/docs/marketplace/best-practices-for-listing.html#plugin-name -->
-    <name>Todo-calendar</name>
+    <name>Todo Calendar</name>
 
     <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
-    <vendor url="https://www.yourcompany.com">YourCompany</vendor>
+    <vendor email="your.email@example.com" url="https://github.com/benson">Benson</vendor>
 
     <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
          Guidelines: https://plugins.jetbrains.com/docs/marketplace/best-practices-for-listing.html#plugin-description -->
     <description><![CDATA[
-        Enter short description for your plugin here.<br>
-        <em>most HTML tags may be used</em>
+        <h1>Todo Calendar - Advanced Task Management for IntelliJ IDEA</h1>
+
+        <p><strong>Todo Calendar</strong> is a comprehensive task management plugin that integrates seamlessly with IntelliJ IDEA to help developers organize and track their daily tasks.</p>
+
+        <h2>✨ Key Features</h2>
+        <ul>
+            <li><strong>📅 Calendar View</strong> - Visualize your tasks in a monthly calendar format</li>
+            <li><strong>📋 Today Panel</strong> - Quick overview of today's tasks with priority indicators</li>
+            <li><strong>✏️ Inline Editing</strong> - Edit tasks directly in the table without dialog popups</li>
+            <li><strong>🎯 Smart Notifications</strong> - Get notified about today's pending tasks at startup</li>
+            <li><strong>📊 Task Management</strong> - Full CRUD operations with priority levels and importance settings</li>
+            <li><strong>📈 Status Tracking</strong> - Track task progress with Waiting, In Progress, and Done states</li>
+            <li><strong>🔄 Auto-save</strong> - All changes are automatically saved as you type</li>
+        </ul>
+
+        <h2>🚀 How to Use</h2>
+        <ol>
+            <li>Open the <strong>Todo Calendar</strong> tool window (usually on the right sidebar)</li>
+            <li>Navigate between 4 tabs: <strong>Today</strong>, <strong>Calendar</strong>, <strong>Todo</strong>, and <strong>Closed</strong></li>
+            <li>Add new tasks using the "추가" button or edit existing ones inline</li>
+            <li>Double-click any cell to edit tasks directly in the table</li>
+            <li>Use the calendar view to see tasks distributed across the month</li>
+        </ol>
+
+        <h2>📝 Task Properties</h2>
+        <ul>
+            <li><strong>Task Name</strong> - Brief description of the task</li>
+            <li><strong>Importance</strong> - Low, Medium, High, or Critical</li>
+            <li><strong>Priority</strong> - Numeric value from 1-10</li>
+            <li><strong>Description</strong> - Detailed task description</li>
+            <li><strong>Date Range</strong> - Start and end dates</li>
+            <li><strong>Status</strong> - Waiting, In Progress, or Done</li>
+        </ul>
+
+        <h2>💡 Pro Tips</h2>
+        <ul>
+            <li>Tasks marked as "Done" will appear with strikethrough formatting</li>
+            <li>High-priority tasks (8-10) show as "긴급" (urgent) in notifications</li>
+            <li>Use the calendar view to plan your tasks across different dates</li>
+            <li>All data is automatically persisted per project</li>
+        </ul>
+
+        <p><em>Perfect for developers who want to stay organized and track their coding tasks efficiently!</em></p>
     ]]></description>
 
     <!-- Product and plugin compatibility requirements.
@@ -32,4 +73,21 @@
         <notificationGroup id="TodoCalendar" displayType="BALLOON" key="notification.group.todocalendar"/>
         <projectCloseHandler implementation="com.benson.todocalendar.TodoProjectCloseHandler"/>
     </extensions>
+
+    <change-notes><![CDATA[
+        <h2>1.0.0</h2>
+        <ul>
+            <li>Initial release</li>
+            <li>Calendar view for task visualization</li>
+            <li>Today panel with priority indicators</li>
+            <li>Inline table editing with auto-save</li>
+            <li>Smart startup notifications</li>
+            <li>Full task management (CRUD operations)</li>
+            <li>Status tracking (Waiting, In Progress, Done)</li>
+            <li>Importance levels (Low, Medium, High, Critical)</li>
+            <li>Priority system (1-10 numeric scale)</li>
+            <li>Date range support for tasks</li>
+            <li>Automatic data persistence per project</li>
+        </ul>
+    ]]></change-notes>
 </idea-plugin>
