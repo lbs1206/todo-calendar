@@ -1,6 +1,7 @@
-package com.benson.todocalendar
+package com.benson.todocalendar.data
 
 import java.time.LocalDate
+import java.util.UUID
 
 // 상태값 (대기, 진행중, 완료)
 enum class Status(val displayName: String) {
@@ -14,7 +15,7 @@ enum class Status(val displayName: String) {
 }
 
 data class TodoItem(
-    val id: String = java.util.UUID.randomUUID().toString(),
+    val id: String = UUID.randomUUID().toString(),
     var taskName: String,
     var importance: Importance,
     var priority: Int, // 1-10

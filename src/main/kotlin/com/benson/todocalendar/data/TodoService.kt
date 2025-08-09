@@ -1,4 +1,4 @@
-package com.benson.todocalendar
+package com.benson.todocalendar.data
 
 import com.intellij.openapi.components.*
 import com.intellij.openapi.project.Project

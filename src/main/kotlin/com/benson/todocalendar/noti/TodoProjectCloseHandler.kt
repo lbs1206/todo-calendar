@@ -1,5 +1,7 @@
-package com.benson.todocalendar
+package com.benson.todocalendar.noti
 
+import com.benson.todocalendar.data.Status
+import com.benson.todocalendar.data.TodoService
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectCloseHandler
 import com.intellij.openapi.ui.Messages
@@ -7,7 +9,7 @@ import java.time.LocalDate
 
 class TodoProjectCloseHandler : ProjectCloseHandler {
     override fun canClose(project: Project): Boolean {
-        val todoService = TodoService.getInstance(project)
+        val todoService = TodoService.Companion.getInstance(project)
         val todayTodos = todoService.getTodayTodos(LocalDate.now())
         val openTodos = todayTodos.filter { it.status != Status.DONE }
 

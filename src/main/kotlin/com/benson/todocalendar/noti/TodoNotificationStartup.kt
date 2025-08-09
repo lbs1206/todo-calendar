@@ -1,5 +1,7 @@
-package com.benson.todocalendar
+package com.benson.todocalendar.noti
 
+import com.benson.todocalendar.data.Status
+import com.benson.todocalendar.data.TodoService
 import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.project.Project
@@ -8,7 +10,7 @@ import java.time.LocalDate
 
 class TodoNotificationStartup : ProjectActivity {
     override suspend fun execute(project: Project) {
-        val todoService = TodoService.getInstance(project)
+        val todoService = TodoService.Companion.getInstance(project)
         val todayTodos = todoService.getTodayTodos(LocalDate.now())
 
         if (todayTodos.isNotEmpty()) {
