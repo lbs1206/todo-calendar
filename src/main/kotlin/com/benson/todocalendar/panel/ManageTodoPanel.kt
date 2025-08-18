@@ -15,7 +15,7 @@ class ManageTodoPanel(private val todoService: TodoService, private val onChange
     init {
         tableModel.addColumn("업무명")
         tableModel.addColumn("중요도")
-        tableModel.addColumn("우선순위")
+        tableModel.addColumn("태그")
         tableModel.addColumn("설명")
         tableModel.addColumn("시작일")
         tableModel.addColumn("종료일")
@@ -29,8 +29,10 @@ class ManageTodoPanel(private val todoService: TodoService, private val onChange
         val importanceCombo = JComboBox(Importance.values().map { it.displayName }.toTypedArray())
         table.columnModel.getColumn(1).cellEditor = DefaultCellEditor(importanceCombo)
 
-        // 우선순위 컬럼 (2)
-        table.columnModel.getColumn(2).cellEditor = DefaultCellEditor(JTextField())
+        // 태그 컬럼 (2) - 쉼표로 구분된 태그 입력
+        val tagField = JTextField()
+        tagField.toolTipText = "쉼표(,)로 태그를 구분하여 입력하세요 (예: frontend, bugfix)"
+        table.columnModel.getColumn(2).cellEditor = DefaultCellEditor(tagField)
 
         // 상태 컬럼 (6)
         val statusCombo = JComboBox(Status.values().map { it.displayName }.toTypedArray())
@@ -52,9 +54,12 @@ class ManageTodoPanel(private val todoService: TodoService, private val onChange
                             todoItem.copy(importance = importance)
                         }
                         2 -> {
-                            val priorityText = tableModel.getValueAt(modelRow, 2) as String
-                            val priority = priorityText.toIntOrNull()?.coerceIn(1, 10) ?: todoItem.priority
-                            todoItem.copy(priority = priority)
+                            val tagsText = tableModel.getValueAt(modelRow, 2) as String
+                            val tags = tagsText.split(",")
+                                .map { it.trim() }
+                                .filter { it.isNotEmpty() }
+                                .toMutableSet()
+                            todoItem.copy(tags = tags)
                         }
                         3 -> todoItem.copy(description = tableModel.getValueAt(modelRow, 3) as String)
                         4 -> {
@@ -116,7 +121,7 @@ class ManageTodoPanel(private val todoService: TodoService, private val onChange
             tableModel.addRow(arrayOf(
                 todo.taskName,
                 todo.importance.displayName,
-                todo.priority,
+                todo.tags.joinToString(", "),
                 todo.description,
                 todo.startDate,
                 todo.endDate,
@@ -133,7 +138,8 @@ class ManageTodoPanel(private val todoService: TodoService, private val onChange
 
         val taskNameField = JTextField(20)
         val importanceCombo = JComboBox(Importance.values())
-        val prioritySpinner = JSpinner(SpinnerNumberModel(5, 1, 10, 1))
+        val tagsField = JTextField(20)
+        tagsField.toolTipText = "쉼표(,)로 태그를 구분하여 입력하세요 (예: frontend, bugfix)"
         val descriptionArea = JTextArea(3, 20)
         val startDateField = JTextField(LocalDate.now().toString(), 10)
         val endDateField = JTextField(LocalDate.now().plusDays(1).toString(), 10)
@@ -149,9 +155,9 @@ class ManageTodoPanel(private val todoService: TodoService, private val onChange
         dialog.add(importanceCombo, gbc)
 
         gbc.gridx = 0; gbc.gridy = 2
-        dialog.add(JLabel("우선순위 (1-10):"), gbc)
+        dialog.add(JLabel("태그 (쉼표 구분):"), gbc)
         gbc.gridx = 1
-        dialog.add(prioritySpinner, gbc)
+        dialog.add(tagsField, gbc)
 
         gbc.gridx = 0; gbc.gridy = 3
         dialog.add(JLabel("설명:"), gbc)
@@ -174,10 +180,15 @@ class ManageTodoPanel(private val todoService: TodoService, private val onChange
 
         okButton.addActionListener {
             try {
+                val tags = tagsField.text.split(",")
+                    .map { it.trim() }
+                    .filter { it.isNotEmpty() }
+                    .toMutableSet()
+
                 val todo = TodoItem(
                     taskName = taskNameField.text,
                     importance = importanceCombo.selectedItem as Importance,
-                    priority = prioritySpinner.value as Int,
+                    tags = tags,
                     description = descriptionArea.text,
                     startDate = LocalDate.parse(startDateField.text),
                     endDate = LocalDate.parse(endDateField.text)

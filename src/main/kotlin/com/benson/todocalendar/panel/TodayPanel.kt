@@ -16,7 +16,7 @@ class TodayPanel(private val todoService: TodoService, private val onChanged: ((
     init {
         tableModel.addColumn("업무명")
         tableModel.addColumn("중요도")
-        tableModel.addColumn("우선순위")
+        tableModel.addColumn("태그")
         tableModel.addColumn("설명")
         tableModel.addColumn("시작일")
         tableModel.addColumn("종료일")
@@ -32,9 +32,9 @@ class TodayPanel(private val todoService: TodoService, private val onChanged: ((
                 val isDone = statusText == Status.DONE.displayName
                 if (c is JLabel) {
                     if (isDone) {
-                        c.foreground = if (isSelected) 
+                        c.foreground = if (isSelected)
                             JBColor(Color(180, 180, 180), Color(120, 120, 120))
-                        else 
+                        else
                             JBColor(Color(150, 150, 150), Color(100, 100, 100))
                         val original = c.text
                         c.text = "<html><s>$original</s></html>"
@@ -87,7 +87,7 @@ class TodayPanel(private val todoService: TodoService, private val onChanged: ((
             tableModel.addRow(arrayOf(
                 todo.taskName,
                 todo.importance.displayName,
-                todo.priority,
+                todo.tags.joinToString(", ") { "#$it" },
                 todo.description,
                 todo.startDate,
                 todo.endDate,

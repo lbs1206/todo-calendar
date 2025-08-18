@@ -30,7 +30,7 @@ open class BaseTablePanel : JPanel(BorderLayout()) {
         var searchText: String = "",
         var importanceFilter: Importance? = null,
         var statusFilter: Status? = null,
-        var priorityRange: IntRange = 1..10
+        var tagFilter: String = ""
     )
 
     init {
@@ -109,25 +109,26 @@ open class BaseTablePanel : JPanel(BorderLayout()) {
         gbc.gridx = 6; gbc.weightx = 1.0; gbc.fill = GridBagConstraints.HORIZONTAL
         filtersPanel.add(Box.createHorizontalGlue(), gbc)
 
-        // 두 번째 줄: 우선순위 필터와 리셋 버튼
+        // 두 번째 줄: 태그 필터와 리셋 버튼
         gbc.gridx = 0; gbc.gridy = 1; gbc.weightx = 0.0; gbc.fill = GridBagConstraints.NONE
         gbc.insets = Insets(2, 2, 2, 8)
-        filtersPanel.add(JLabel("우선순위:"), gbc)
+        filtersPanel.add(JLabel("태그:"), gbc)
 
         gbc.gridx = 1; gbc.insets = Insets(2, 0, 2, 15)
-        val priorityCombo = JComboBox(arrayOf("전체", "높음 (8-10)", "보통 (4-7)", "낮음 (1-3)"))
-        priorityCombo.preferredSize = Dimension(110, priorityCombo.preferredSize.height)
-        priorityCombo.addActionListener { 
-            currentFilters.priorityRange = when (priorityCombo.selectedIndex) {
-                0 -> 1..10
-                1 -> 8..10
-                2 -> 4..7
-                3 -> 1..3
-                else -> 1..10
+        val tagField = JTextField(10)
+        tagField.preferredSize = Dimension(110, tagField.preferredSize.height)
+        tagField.toolTipText = "태그로 필터링 (부분 일치)"
+        tagField.document.addDocumentListener(object : DocumentListener {
+            override fun insertUpdate(e: DocumentEvent?) = updateTagFilter()
+            override fun removeUpdate(e: DocumentEvent?) = updateTagFilter()
+            override fun changedUpdate(e: DocumentEvent?) = updateTagFilter()
+
+            private fun updateTagFilter() {
+                currentFilters.tagFilter = tagField.text.trim()
+                applyFilters()
             }
-            applyFilters()
-        }
-        filtersPanel.add(priorityCombo, gbc)
+        })
+        filtersPanel.add(tagField, gbc)
 
         // 필터 초기화 버튼
         gbc.gridx = 2; gbc.insets = Insets(2, 0, 2, 8)
@@ -139,7 +140,7 @@ open class BaseTablePanel : JPanel(BorderLayout()) {
             searchField.text = ""
             importanceCombo.selectedIndex = 0
             statusCombo.selectedIndex = 0
-            priorityCombo.selectedIndex = 0
+            tagField.text = ""
             currentFilters = FilterState()
             applyFilters()
         }
@@ -175,10 +176,12 @@ open class BaseTablePanel : JPanel(BorderLayout()) {
             // 상태 필터
             val statusMatch = currentFilters.statusFilter?.let { it == todo.status } ?: true
 
-            // 우선순위 필터
-            val priorityMatch = todo.priority in currentFilters.priorityRange
+            // 태그 필터
+            val tagMatch = if (currentFilters.tagFilter.isEmpty()) true else {
+                todo.tags.any { tag -> tag.contains(currentFilters.tagFilter, ignoreCase = true) }
+            }
 
-            searchMatch && importanceMatch && statusMatch && priorityMatch
+            searchMatch && importanceMatch && statusMatch && tagMatch
         }
 
         // 결과 개수 업데이트

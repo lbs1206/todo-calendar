@@ -1,10 +1,7 @@
 package com.benson.todocalendar
 
 import com.benson.todocalendar.data.TodoService
-import com.benson.todocalendar.panel.CalendarPanel
-import com.benson.todocalendar.panel.ClosedPanel
-import com.benson.todocalendar.panel.ManageTodoPanel
-import com.benson.todocalendar.panel.TodayPanel
+import com.benson.todocalendar.panel.*
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
@@ -30,12 +27,14 @@ private class MainTabbedPanel(private val project: Project) : JPanel(BorderLayou
     private val calendarPanel = CalendarPanel(todoService)
     private val todoPanel = ManageTodoPanel(todoService) { refreshAll() }
     private val closedPanel = ClosedPanel(todoService) { refreshAll() }
+    private val importExportPanel = ImportExportPanel()
 
     init {
         tabs.addTab("Today", todayPanel)
         tabs.addTab("Calendar", calendarPanel)
         tabs.addTab("Todo", todoPanel)
         tabs.addTab("Closed", closedPanel)
+        tabs.addTab("Data", importExportPanel)  // 새로운 탭 추가
         add(tabs, BorderLayout.CENTER)
         refreshAll()
     }

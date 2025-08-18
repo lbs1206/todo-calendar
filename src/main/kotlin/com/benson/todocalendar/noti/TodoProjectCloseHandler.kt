@@ -1,5 +1,6 @@
 package com.benson.todocalendar.noti
 
+import com.benson.todocalendar.data.Importance
 import com.benson.todocalendar.data.Status
 import com.benson.todocalendar.data.TodoService
 import com.intellij.openapi.project.Project
@@ -18,7 +19,7 @@ class TodoProjectCloseHandler : ProjectCloseHandler {
                 appendLine("오늘 완료되지 않은 할 일이 ${openTodos.size}개 있습니다:")
                 appendLine()
                 openTodos.take(3).forEach { todo ->
-                    val priorityText = if (todo.priority >= 8) " [긴급]" else ""
+                    val priorityText =if (todo.importance == Importance.CRITICAL) " [긴급]" else ""
                     appendLine("• ${todo.taskName}$priorityText")
                 }
                 if (openTodos.size > 3) {

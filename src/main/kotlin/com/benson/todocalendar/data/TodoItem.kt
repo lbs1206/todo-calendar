@@ -18,7 +18,7 @@ data class TodoItem(
     val id: String = UUID.randomUUID().toString(),
     var taskName: String,
     var importance: Importance,
-    var priority: Int, // 1-10
+    var tags: MutableSet<String> = mutableSetOf(),
     var description: String = "",
     var startDate: LocalDate,
     var endDate: LocalDate,

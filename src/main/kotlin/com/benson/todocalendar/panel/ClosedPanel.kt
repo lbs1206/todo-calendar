@@ -13,7 +13,7 @@ class ClosedPanel(private val todoService: TodoService, private val onChanged: (
     init {
         tableModel.addColumn("업무명")
         tableModel.addColumn("중요도")
-        tableModel.addColumn("우선순위")
+        tableModel.addColumn("태그")
         tableModel.addColumn("설명")
         tableModel.addColumn("시작일")
         tableModel.addColumn("종료일")
@@ -50,7 +50,7 @@ class ClosedPanel(private val todoService: TodoService, private val onChanged: (
             tableModel.addRow(arrayOf(
                 todo.taskName,
                 todo.importance.displayName,
-                todo.priority,
+                todo.tags.joinToString(", ") { "#$it" },
                 todo.description,
                 todo.startDate,
                 todo.endDate,
