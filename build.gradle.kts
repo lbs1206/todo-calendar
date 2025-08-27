@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "com.benson"
-version = "1.0.0"
+version = "1.0.2"
 
 repositories {
     mavenCentral()
@@ -32,7 +32,7 @@ intellijPlatform {
 
         ideaVersion {
             sinceBuild = "242"
-            untilBuild = "251.*"
+            untilBuild = "252.*"
         }
 
         changeNotes = """
